@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
-	"net/http"
 	"car-backend/pkg/models"
 	"car-backend/pkg/repository"
-	
+	"encoding/json"
+	"net/http"
+
 	"github.com/clerk/clerk-sdk-go/v2"
 )
 
@@ -19,59 +19,35 @@ func NewUserHandler(userRepo *repository.UserRepository) *UserHandler {
 
 // HandleWebhook processes Clerk webhooks for user events
 func (h *UserHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
-	// Verify webhook signature here
-	var event struct {
-		Type string `json:"type"`
-		Data struct {
-			ID    string `json:"id"`
-			Email string `json:"email"`
-			Name  string `json:"name"`
-			ImageURL string `json:"image_url"`
-		} `json:"data"`
-	}
-	
-	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if event.Type == "user.created" {
-		user := &models.User{
-			ID:       event.Data.ID,
-			Email:    event.Data.Email,
-			Name:     event.Data.Name,
-			PhotoURL: event.Data.ImageURL,
-		}
-		
-		if err := h.userRepo.CreateUser(r.Context(), user); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-	
-	w.WriteHeader(http.StatusOK)
+	// Implement webhook handling for Clerk events
+	// This is where you'll handle user creation/updates from Clerk
+	// Example: user.created, user.updated, etc.
 }
 
 // GetProfile returns the user's profile
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+	ctx := r.Context()
+	claims, ok := clerk.SessionClaimsFromContext(ctx)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	user, err := h.userRepo.GetByID(r.Context(), claims.Subject)
+	// Get user from our database
+	user, err := h.userRepo.GetByID(ctx, claims.Subject)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to get user profile", http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
 
 // UpdateProfile updates the user's profile
 func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+	ctx := r.Context()
+	claims, ok := clerk.SessionClaimsFromContext(ctx)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -83,10 +59,10 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.userRepo.UpdateProfile(r.Context(), claims.Subject, &update); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := h.userRepo.UpdateProfile(ctx, claims.Subject, &update); err != nil {
+		http.Error(w, "Failed to update profile", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-} 
+}
