@@ -21,9 +21,18 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var debugMode bool
+
+func debugLog(format string, v ...interface{}) {
+	if debugMode {
+		log.Printf("{\"severity\":\"DEBUG\",\"message\":\""+format+"\"}", v...)
+	}
+}
+
 func setupLogging() {
-	log.SetFlags(0)
+	// Configure logging to write to stdout and include timestamp
 	log.SetOutput(os.Stdout)
+	log.SetFlags(0) // Remove timestamp prefix as we're using structured logging
 }
 
 func checkEnvironment() {
@@ -64,13 +73,18 @@ func checkEnvironment() {
 
 func setupDatabase() *sql.DB {
 	var dbURI string
+	var db *sql.DB
+	var err error
 	if os.Getenv("ENV") == "local" {
-		// Local development connection
-		dbURI = fmt.Sprintf("host=localhost user=%s password=%s dbname=%s sslmode=disable",
+		// Local development connecting to Cloud SQL
+		dbURI := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_PORT"),
 			os.Getenv("DB_USER"),
 			os.Getenv("DB_PASSWORD"),
 			os.Getenv("DB_NAME"),
 		)
+		db, err = sql.Open("postgres", dbURI)
 	} else {
 		// Cloud SQL connection
 		dbURI = fmt.Sprintf("host=/cloudsql/%s user=%s password=%s dbname=%s sslmode=disable",
@@ -79,16 +93,22 @@ func setupDatabase() *sql.DB {
 			os.Getenv("DB_PASSWORD"),
 			os.Getenv("DB_NAME"),
 		)
+		db, err = sql.Open("cloudsqlpostgres", dbURI)
 	}
 
-	db, err := sql.Open("cloudsqlpostgres", dbURI)
 	if err != nil {
 		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Database connection failed: %v\"}", err)
 		os.Exit(1)
 	}
 
+	// Test the connection
+	if err := db.Ping(); err != nil {
+		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Database ping failed: %v\"}", err)
+		os.Exit(1)
+	}
+
 	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(25)
+	db.SetMaxIdleConns(2)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
 	return db
@@ -103,7 +123,7 @@ func setupClerk() {
 	clerk.SetKey(clerkSecretKey)
 }
 
-func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.CarpoolHandler) *mux.Router {
+func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.CarPoolHandler) *mux.Router {
 	r := mux.NewRouter()
 
 	// Health check endpoint (public)
@@ -130,8 +150,12 @@ func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.Car
 	protected.HandleFunc("/profile", userHandler.GetProfile).Methods("GET")
 	protected.HandleFunc("/profile", userHandler.UpdateProfile).Methods("PUT")
 
-	protected.HandleFunc("/carpools", carpoolHandler.CreateCarPool).Methods("POST")
-	protected.HandleFunc("/carpools/{id}", carpoolHandler.GetCarPool).Methods("GET")
+	// Make these carpool endpoints public for testing
+	r.HandleFunc("/api/carpools", carpoolHandler.CreateCarPool).Methods("POST")
+	r.HandleFunc("/api/carpools/{id}", carpoolHandler.GetCarPool).Methods("GET")
+
+	//protected.HandleFunc("/carpools", carpoolHandler.CreateCarPool).Methods("POST")
+	//protected.HandleFunc("/carpools/{id}", carpoolHandler.GetCarPool).Methods("GET")
 	protected.HandleFunc("/carpools/{id}", carpoolHandler.UpdateCarPool).Methods("PUT")
 	protected.HandleFunc("/carpools/{id}", carpoolHandler.DeleteCarPool).Methods("DELETE")
 	protected.HandleFunc("/carpools/search", carpoolHandler.SearchCarPools).Methods("POST")
@@ -141,14 +165,23 @@ func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.Car
 
 func main() {
 
+	setupLogging()
+
+	log.Printf("{\"severity\":\"INFO\",\"message\":\"Starting application\"}")
+
 	// Load .env file before any other setup
 	if err := godotenv.Load(); err != nil {
 		log.Printf("{\"severity\":\"WARNING\",\"message\":\"Error loading .env file: %v\"}", err)
+	} else {
+		log.Printf("{\"severity\":\"INFO\",\"message\":\"Successfully loaded .env file\"}")
 	}
 
-	setupLogging()
-	log.Printf("DB_USER: %s", os.Getenv("DB_USER"))
-	log.Printf("ENV: %s", os.Getenv("ENV"))
+	// Initialize debug mode
+	debugMode = os.Getenv("DEBUG") == "true"
+	debugLog("Debug mode enabled")
+	debugLog("Environment: %s", os.Getenv("ENV"))
+	debugLog("DB_USER: %s", os.Getenv("DB_USER"))
+
 	checkEnvironment()
 	setupClerk()
 
@@ -157,11 +190,11 @@ func main() {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
-	carpoolRepo := repository.NewCarpoolRepository(db)
+	carpoolRepo := repository.NewCarPoolRepository(db)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userRepo)
-	carpoolHandler := handlers.NewCarpoolHandler(carpoolRepo)
+	carpoolHandler := handlers.NewCarPoolHandler(carpoolRepo)
 
 	router := setupRouter(userHandler, carpoolHandler)
 

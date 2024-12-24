@@ -23,13 +23,13 @@ func Load() *Config {
 
 	config := &Config{
 		ClerkSecretKey: getEnvOrDefault("CLERK_SECRET_KEY", ""),
-		DatabaseURL:    fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
+		DatabaseURL: fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
 			url.QueryEscape(getEnvOrDefault("DB_USER", "postgres")),
 			url.QueryEscape(getEnvOrDefault("DB_PASSWORD", "")),
 			getEnvOrDefault("DB_HOST", "localhost"),
 			getEnvOrDefault("DB_PORT", "5432"),
 			getEnvOrDefault("DB_NAME", "carpool")),
-			Port: getEnvOrDefault("PORT", "8080"),
+		//Port: getEnvOrDefault("PORT", "8080"),
 	}
 
 	// Validate required fields
@@ -51,4 +51,4 @@ func getEnvOrDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
-} 
+}
