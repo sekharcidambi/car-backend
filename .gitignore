@@ -1,0 +1,30 @@
+# Environment files
+.env
+.env.*
+*.env
+
+# Binary files
+*.exe
+*.out
+bin/
+
+# OS files
+.DS_Store
+
+# Go specific
+/vendor/
+go.sum
+
+# IDE specific
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Build output
+/build/
+/dist/
+
+# Test files
+*.test 

@@ -1,0 +1,9 @@
+.env
+*.exe
+*.out
+bin/
+pkg/
+.DS_Store
+go.mod
+go.sum
+/vendor/
