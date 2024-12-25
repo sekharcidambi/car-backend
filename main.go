@@ -72,9 +72,9 @@ func checkEnvironment() {
 }
 
 func setupDatabase() *sql.DB {
-	var dbURI string
 	var db *sql.DB
 	var err error
+
 	if os.Getenv("ENV") == "local" {
 		// Local development connecting to Cloud SQL
 		dbURI := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -86,25 +86,31 @@ func setupDatabase() *sql.DB {
 		)
 		db, err = sql.Open("postgres", dbURI)
 	} else {
-		// Cloud SQL connection
-		dbURI = fmt.Sprintf("host=/cloudsql/%s user=%s password=%s dbname=%s sslmode=disable",
+		// Cloud SQL connection using unix socket
+		dbURI := fmt.Sprintf("host=/cloudsql/%s user=%s password=%s dbname=%s",
 			os.Getenv("INSTANCE_CONNECTION_NAME"),
 			os.Getenv("DB_USER"),
 			os.Getenv("DB_PASSWORD"),
 			os.Getenv("DB_NAME"),
 		)
-		db, err = sql.Open("cloudsqlpostgres", dbURI)
+
+		debugLog("Attempting to connect to Cloud SQL with connection name: %s", dbURI)
+		db, err = sql.Open("postgres", dbURI)
 	}
 
 	if err != nil {
 		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Database connection failed: %v\"}", err)
 		os.Exit(1)
+	} else {
+		log.Printf("{\"severity\":\"INFO\",\"message\":\"Database connection successful\"}")
 	}
 
 	// Test the connection
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(context.Background()); err != nil {
 		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Database ping failed: %v\"}", err)
 		os.Exit(1)
+	} else {
+		log.Printf("{\"severity\":\"INFO\",\"message\":\"Database ping successful\"}")
 	}
 
 	db.SetMaxOpenConns(25)
@@ -181,6 +187,9 @@ func main() {
 	debugLog("Debug mode enabled")
 	debugLog("Environment: %s", os.Getenv("ENV"))
 	debugLog("DB_USER: %s", os.Getenv("DB_USER"))
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"INSTANCE_CONNECTION_NAME=%s\"}", os.Getenv("INSTANCE_CONNECTION_NAME"))
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"DB_USER=%s\"}", os.Getenv("DB_USER"))
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"DB_NAME=%s\"}", os.Getenv("DB_NAME"))
 
 	checkEnvironment()
 	setupClerk()

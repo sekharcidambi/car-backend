@@ -11,6 +11,8 @@ gcloud run deploy car-backend-latest \
     --set-env-vars INSTANCE_CONNECTION_NAME=carpool-app-backend:us-west1:carpool-db \
     --set-env-vars DB_USER=postgres \
     --set-env-vars DB_NAME=carpool \
+    --set-env-vars DB_HOST=34.169.89.97\
+    --set-env-vars DB_PORT=5432 \
     --set-env-vars CLERK_SECRET_KEY="sk_test_1PJu7w8VJt6mbzOXbfrifc953xIH4at8sukbgczj6y" \
     --set-secrets DB_PASSWORD=db-password:latest \
     --min-instances 1 \
