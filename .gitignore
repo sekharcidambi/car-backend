@@ -2,6 +2,7 @@
 .env
 .env.*
 *.env
+btpd.sh
 
 # Binary files
 *.exe
