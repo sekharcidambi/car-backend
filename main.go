@@ -181,7 +181,10 @@ func main() {
 	debugLog("Debug mode enabled")
 	debugLog("Environment: %s", os.Getenv("ENV"))
 	debugLog("DB_USER: %s", os.Getenv("DB_USER"))
-
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"INSTANCE_CONNECTION_NAME=%s\"}", os.Getenv("INSTANCE_CONNECTION_NAME"))
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"DB_USER=%s\"}", os.Getenv("DB_USER"))
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"DB_NAME=%s\"}", os.Getenv("DB_NAME"))
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"DB_HOST=%s\"}", os.Getenv("DB_HOST"))
 	checkEnvironment()
 	setupClerk()
 

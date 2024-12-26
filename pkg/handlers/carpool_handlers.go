@@ -4,11 +4,16 @@ import (
 	"bytes"
 	"car-backend/pkg/models"
 	"car-backend/pkg/repository"
+	"context"
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type CarPoolHandler struct {
@@ -79,7 +84,22 @@ func (h *CarPoolHandler) CreateCarPool(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CarPoolHandler) GetCarPool(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	carpoolID := params["id"]
+
+	carpool, err := h.carpoolRepo.GetCarPool(context.Background(), carpoolID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Carpool not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, fmt.Sprintf("Failed to get carpool: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(carpool)
 }
 
 func (h *CarPoolHandler) UpdateCarPool(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +107,22 @@ func (h *CarPoolHandler) UpdateCarPool(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CarPoolHandler) DeleteCarPool(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	carpoolID := params["id"]
+
+	err := h.carpoolRepo.DeleteCarPool(context.Background(), carpoolID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Carpool not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, fmt.Sprintf("Failed to delete carpool: %v", err), http.StatusInternalServerError)
+		return
+	}
+	print("Carpool deleted successfully")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *CarPoolHandler) SearchCarPools(w http.ResponseWriter, r *http.Request) {
