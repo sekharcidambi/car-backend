@@ -2,38 +2,47 @@ package models
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
-type CarPool struct {
-	ID              string    `json:"id" db:"id"`
+type Carpool struct {
+	ID              uuid.UUID `json:"id" db:"id"`
 	CreatorID       string    `json:"creator_id" db:"creator_id"`
+	Name            string    `json:"name" db:"name"`
 	ScheduleDate    time.Time `json:"schedule_date" db:"schedule_date"`
 	ScheduleTime    time.Time `json:"schedule_time" db:"schedule_time"`
 	RecurringOption string    `json:"recurring_option" db:"recurring_option"`
-	StartPointLat   float64   `json:"start_point_lat" db:"starting_point_lat"`
-	StartPointLng   float64   `json:"start_point_lng" db:"starting_point_lng"`
-	DestinationLat  float64   `json:"destination_lat" db:"destination_lat"`
-	DestinationLng  float64   `json:"destination_lng" db:"destination_lng"`
 	AvailableSeats  int       `json:"available_seats" db:"available_seats"`
-	MusicPreference string    `json:"music_preference" db:"music_preference"`
-	SmokingAllowed  bool      `json:"smoking_allowed" db:"smoking_allowed"`
-	PetsAllowed     bool      `json:"pets_allowed" db:"pets_allowed"`
+	Stops           []Stop    `json:"stops"`
 	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
 }
 
+type Stop struct {
+	ID        uuid.UUID `json:"id" db:"id"`
+	CarpoolID uuid.UUID `json:"carpool_id" db:"carpool_id"`
+	Address   string    `json:"address" db:"address"`
+	StopOrder int       `json:"stop_order" db:"stop_order"`
+	StopType  string    `json:"stop_type" db:"stop_type"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
 type CreateCarPoolRequest struct {
-	ScheduleDate    string  `json:"schedule_date"`
-	ScheduleTime    string  `json:"schedule_time"`
-	RecurringOption string  `json:"recurring_option"`
-	StartPointLat   float64 `json:"start_point_lat"`
-	StartPointLng   float64 `json:"start_point_lng"`
-	DestinationLat  float64 `json:"destination_lat"`
-	DestinationLng  float64 `json:"destination_lng"`
-	AvailableSeats  int     `json:"available_seats"`
-	MusicPreference string  `json:"music_preference"`
-	SmokingAllowed  bool    `json:"smoking_allowed"`
-	PetsAllowed     bool    `json:"pets_allowed"`
+	Name               string `json:"name"`
+	ScheduleDate       string `json:"schedule_date"`
+	ScheduleTime       string `json:"schedule_time"`
+	RecurringOption    string `json:"recurring_option"`
+	AvailableSeats     int    `json:"available_seats"`
+	StartAddress       string `json:"start_address"`
+	DestinationAddress string `json:"destination_address"`
+}
+
+type StopRequest struct {
+	Address   string `json:"address"`
+	StopType  string `json:"stop_type"`
+	StopOrder int    `json:"stop_order"`
 }
 
 type SearchFilters struct {

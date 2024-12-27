@@ -1,14 +1,12 @@
 package handlers
 
 import (
-	"bytes"
 	"car-backend/pkg/models"
 	"car-backend/pkg/repository"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"time"
@@ -27,16 +25,6 @@ func NewCarPoolHandler(repo *repository.CarPoolRepository) *CarPoolHandler {
 }
 
 func (h *CarPoolHandler) CreateCarPool(w http.ResponseWriter, r *http.Request) {
-	// Debug: Print request body
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Failed to read request body: %v\"}", err)
-		http.Error(w, "Failed to read request", http.StatusBadRequest)
-		return
-	}
-	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"Received request body: %s\"}", string(body))
-	r.Body = io.NopCloser(bytes.NewBuffer(body)) // Restore body for later use
-
 	var req models.CreateCarPoolRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Failed to decode request: %v\"}", err)
@@ -59,18 +47,29 @@ func (h *CarPoolHandler) CreateCarPool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	carpool := &models.CarPool{
+	// Create carpool object
+	carpool := &models.Carpool{
+		CreatorID:       "temp-creator", // TODO: Get from auth context
+		Name:            req.Name,
 		ScheduleDate:    scheduleDate,
 		ScheduleTime:    scheduleTime,
 		RecurringOption: req.RecurringOption,
-		StartPointLat:   req.StartPointLat,
-		StartPointLng:   req.StartPointLng,
-		DestinationLat:  req.DestinationLat,
-		DestinationLng:  req.DestinationLng,
 		AvailableSeats:  req.AvailableSeats,
-		MusicPreference: req.MusicPreference,
-		SmokingAllowed:  req.SmokingAllowed,
-		PetsAllowed:     req.PetsAllowed,
+		Stops:           make([]models.Stop, 2), // Always 2 stops: start and destination
+	}
+
+	// Create start stop
+	carpool.Stops[0] = models.Stop{
+		Address:   req.StartAddress,
+		StopOrder: 0,
+		StopType:  "START",
+	}
+
+	// Create destination stop
+	carpool.Stops[1] = models.Stop{
+		Address:   req.DestinationAddress,
+		StopOrder: 1,
+		StopType:  "DESTINATION",
 	}
 
 	if err := h.carpoolRepo.CreateCarPool(r.Context(), carpool); err != nil {
