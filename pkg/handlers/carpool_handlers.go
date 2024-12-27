@@ -32,7 +32,10 @@ func (h *CarPoolHandler) CreateCarPool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse date and time
+	// Debug log the received time
+	log.Printf("{\"severity\":\"DEBUG\",\"message\":\"Received time string: %s\"}", req.ScheduleTime)
+
+	// Parse date and time with more flexible time format
 	scheduleDate, err := time.Parse("2006-01-02", req.ScheduleDate)
 	if err != nil {
 		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Invalid date format: %v\"}", err)
@@ -40,11 +43,17 @@ func (h *CarPoolHandler) CreateCarPool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scheduleTime, err := time.Parse("15:04:05", req.ScheduleTime)
+	// Try parsing time in HH:MM format first
+	scheduleTime, err := time.Parse("15:04", req.ScheduleTime)
 	if err != nil {
-		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Invalid time format: %v\"}", err)
-		http.Error(w, "Invalid time format", http.StatusBadRequest)
-		return
+		log.Printf("{\"severity\":\"ERROR\",\"message\":\"Failed to parse time in HH:MM format: %v\"}", err)
+		// Try HH:MM:SS format as fallback
+		scheduleTime, err = time.Parse("15:04:05", req.ScheduleTime)
+		if err != nil {
+			log.Printf("{\"severity\":\"ERROR\",\"message\":\"Failed to parse time in both formats: %v\"}", err)
+			http.Error(w, "Invalid time format. Use HH:MM or HH:MM:SS", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Create carpool object

@@ -42,5 +42,6 @@ require (
 
 require (
 	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
+	github.com/rs/cors v1.11.1 // indirect
 	golang.org/x/crypto v0.30.0 // indirect
 )

@@ -19,6 +19,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 var debugMode bool
@@ -188,6 +189,15 @@ func main() {
 	debugLog("Environment: %s", os.Getenv("ENV"))
 	debugLog("DB_USER: %s", os.Getenv("DB_USER"))
 
+	// CORS middleware configuration
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+		Debug:            debugMode,
+	})
+
 	checkEnvironment()
 	setupClerk()
 
@@ -209,9 +219,10 @@ func main() {
 		port = "8080"
 	}
 
+	// Create the server with CORS-enabled handler
 	server := &http.Server{
 		Addr:         ":" + port,
-		Handler:      router,
+		Handler:      corsMiddleware.Handler(router),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
