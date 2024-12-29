@@ -2,7 +2,6 @@
 CREATE TABLE carpools (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     creator_id VARCHAR(255),
-    admin_id UUID, 
     carpool_name VARCHAR(255) NOT NULL, 
     status BOOLEAN DEFAULT TRUE, 
     recurring_option VARCHAR(50),
