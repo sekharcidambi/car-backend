@@ -1,4 +1,4 @@
--- Create table for carpools
+-- First, create the base carpools table
 CREATE TABLE carpools (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     creator_id VARCHAR(255),
@@ -12,22 +12,7 @@ CREATE TABLE carpools (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create table for carpool invites
-CREATE TABLE invites (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    from_user UUID NOT NULL,
-    to_user UUID NOT NULL,
-    carpool_id UUID NOT NULL,
-    message TEXT, 
-    status INTEGER, 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (from_user) REFERENCES users(id),
-    FOREIGN KEY (to_user) REFERENCES users(id),
-    FOREIGN KEY (carpool_id) REFERENCES carpools(id)
-);
-
---Create table for carpool members
+-- Then create carpool_members table (references users and carpools)
 CREATE TABLE carpool_members (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
     carpool_id UUID NOT NULL,
@@ -36,10 +21,10 @@ CREATE TABLE carpool_members (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (carpool_id) REFERENCES carpools(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id),
-    UNIQUE (carpool_id, user_id) -- Ensure unique combination of carpool_id and user_id
+    UNIQUE (carpool_id, user_id)
 );
 
--- Create table for carpool rides
+-- Create carpool_rides table (references users and carpools)
 CREATE TABLE carpool_rides (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     carpool_id UUID NOT NULL,
@@ -54,8 +39,7 @@ CREATE TABLE carpool_rides (
     FOREIGN KEY (driver_id) REFERENCES users(id) 
 );
 
-
--- Create table for carpool stops(transaction with carpool rides)
+-- Create carpool_stops table (references carpool_rides)
 CREATE TABLE carpool_stops (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     carpool_ride_id UUID NOT NULL,
@@ -63,10 +47,25 @@ CREATE TABLE carpool_stops (
     stop_order INTEGER NOT NULL, 
     stop_type VARCHAR(20) CHECK (stop_type IN ('START', 'INTERMEDIATE', 'DESTINATION')),
     user_id UUID, 
-    FOREIGN KEY (carpool_ride_id) REFERENCES carpool_rides(id) ON DELETE CASCADE, 
-    FOREIGN KEY (user_id) REFERENCES users(id), 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (carpool_ride_id) REFERENCES carpool_rides(id) ON DELETE CASCADE, 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Finally, create invites table (references users and carpools)
+CREATE TABLE invites (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    from_user UUID NOT NULL,
+    to_user UUID NOT NULL,
+    carpool_id UUID NOT NULL,
+    message TEXT, 
+    status INTEGER, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (from_user) REFERENCES users(id),
+    FOREIGN KEY (to_user) REFERENCES users(id),
+    FOREIGN KEY (carpool_id) REFERENCES carpools(id)
 );
 
 
