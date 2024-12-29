@@ -10,7 +10,6 @@ import (
 type Carpool struct {
 	ID                 uuid.UUID `json:"id" db:"id"`
 	CreatorID          string    `json:"creator_id" db:"creator_id"`
-	AdminID            uuid.UUID `json:"admin_id" db:"admin_id"`
 	CarpoolName        string    `json:"carpool_name" db:"carpool_name"`
 	Status             bool      `json:"status" db:"status"`
 	RecurringOption    string    `json:"recurring_option" db:"recurring_option"`

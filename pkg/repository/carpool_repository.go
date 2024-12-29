@@ -28,14 +28,14 @@ func (r *CarPoolRepository) CreateCarPool(ctx context.Context, carpool *models.C
     // Insert main carpool record
     query := `
             INSERT INTO carpools (
-                creator_id, admin_id, carpool_name, status, recurring_option,
+                creator_id, carpool_name, status, recurring_option,
                 available_seats, destination_address, seats
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING id, created_at, updated_at`
 
     err = tx.QueryRowContext(
         ctx, query,
-        carpool.CreatorID, carpool.AdminID, carpool.CarpoolName, carpool.Status,
+        carpool.CreatorID, carpool.CarpoolName, carpool.Status,
         carpool.RecurringOption, carpool.AvailableSeats, carpool.DestinationAddress, carpool.Seats,
     ).Scan(&carpool.ID, &carpool.CreatedAt, &carpool.UpdatedAt)
 
@@ -63,7 +63,7 @@ func (r *CarPoolRepository) GetCarPool(ctx context.Context, carpoolID uuid.UUID)
 
     // Get carpool details
     carpoolQuery := `
-        SELECT id, creator_id, admin_id, carpool_name, status, recurring_option,
+        SELECT id, creator_id, carpool_name, status, recurring_option,
                available_seats, destination_address, seats, created_at, updated_at
         FROM carpools
         WHERE id = $1`
@@ -71,7 +71,6 @@ func (r *CarPoolRepository) GetCarPool(ctx context.Context, carpoolID uuid.UUID)
     err = tx.QueryRowContext(ctx, carpoolQuery, carpoolID).Scan(
         &carpool.ID,
         &carpool.CreatorID,
-        &carpool.AdminID, // Assuming admin_id is present in the table
         &carpool.CarpoolName,
         &carpool.Status,
         &carpool.RecurringOption,
