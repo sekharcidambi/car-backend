@@ -5,7 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
+	"github.com/google/uuid"
 	
 )
 
@@ -47,4 +47,32 @@ func (r *InviteRepository) CreateInvite(ctx context.Context, invite *models.Invi
     return nil
 }
 
+func (r *InviteRepository) GetInvite(ctx context.Context, inviteID uuid.UUID) (*models.Invite, error) {
+    invite := &models.Invite{}
+
+    query := `
+            SELECT id, from_user, to_user, carpool_id, message, status, created_at, updated_at
+            FROM invites
+            WHERE id = $1
+    `
+
+    err := r.db.QueryRowContext(ctx, query, inviteID).Scan(
+            &invite.ID,
+            &invite.FromUser,
+            &invite.ToUser,
+            &invite.CarpoolID,
+            &invite.Message,
+            &invite.Status,
+            &invite.CreatedAt,
+            &invite.UpdatedAt,
+    )
+    if err != nil {
+            if err == sql.ErrNoRows {
+                    return nil, nil
+            }
+            return nil, fmt.Errorf("failed to get invite: %w", err)
+    }
+
+    return invite, nil
+}
 

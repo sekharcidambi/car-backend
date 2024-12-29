@@ -168,6 +168,7 @@ func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.Car
 	protected.HandleFunc("/carpools/search", carpoolHandler.SearchCarPools).Methods("POST")
 
 	protected.HandleFunc("/invites", inviteHandler.CreateInvite).Methods("POST")
+	protected.HandleFunc("/invites/{id}", inviteHandler.GetInvite).Methods("GET")
 	return r
 }
 
