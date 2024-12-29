@@ -1,6 +1,6 @@
 -- Create table users
 CREATE TABLE users (
-    id VARCHAR(255) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     photo_url TEXT,
