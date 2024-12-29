@@ -135,3 +135,4 @@ const (
 	InviteStatusAccepted = 1
 	InviteStatusRejected = 2
 )
+
