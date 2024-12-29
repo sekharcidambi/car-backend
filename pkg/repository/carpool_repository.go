@@ -127,6 +127,7 @@ func (r *CarPoolRepository) DeleteCarPool(ctx context.Context, carpoolID uuid.UU
     return nil
 }
 
+
 // Add methods like:
 // UpdateCarPool
 // SearchCarPools

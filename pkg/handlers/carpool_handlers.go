@@ -17,6 +17,7 @@ type CarPoolHandler struct {
 	carpoolRepo *repository.CarPoolRepository
 }
 
+
 func NewCarPoolHandler(repo *repository.CarPoolRepository) *CarPoolHandler {
 	return &CarPoolHandler{
 		carpoolRepo: repo,
@@ -105,6 +106,7 @@ func (h *CarPoolHandler) DeleteCarPool(w http.ResponseWriter, r *http.Request) {
 
     w.WriteHeader(http.StatusNoContent) 
 }
+
 
 func (h *CarPoolHandler) SearchCarPools(w http.ResponseWriter, r *http.Request) {
 	// TODO: Implement
