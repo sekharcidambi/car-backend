@@ -130,7 +130,7 @@ func setupClerk() {
 	clerk.SetKey(clerkSecretKey)
 }
 
-func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.CarPoolHandler, inviteHandler *handlers.InviteHandler) *mux.Router {
+func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.CarPoolHandler, inviteHandler *handlers.InviteHandler, carpoolRideHandler *handlers.CarPoolRideHandler) *mux.Router {
 	r := mux.NewRouter()
 
 	// Health check endpoint (public)
@@ -166,6 +166,9 @@ func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.Car
 	protected.HandleFunc("/carpools/{id}", carpoolHandler.UpdateCarPool).Methods("PUT")
 	protected.HandleFunc("/carpools/{id}", carpoolHandler.DeleteCarPool).Methods("DELETE")
 	protected.HandleFunc("/carpools/search", carpoolHandler.SearchCarPools).Methods("POST")
+
+	protected.HandleFunc("/carpools/{id}/rides", carpoolRideHandler.CreateCarpoolRide).Methods("POST")
+	protected.HandleFunc("/carpools/{id}/rides/{rideID}", carpoolRideHandler.GetCarpoolRide).Methods("GET")
 
 	protected.HandleFunc("/invites", inviteHandler.CreateInvite).Methods("POST")
 	protected.HandleFunc("/invites/{id}", inviteHandler.GetInvite).Methods("GET")
@@ -210,13 +213,15 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	carpoolRepo := repository.NewCarPoolRepository(db)
 	inviteRepo := repository.NewInviteRepository(db)
+	carpoolRideRepo := repository.NewCarPoolRideRepository(db)
 
 	// Initialize handlers
 	userHandler := handlers.NewUserHandler(userRepo)
 	carpoolHandler := handlers.NewCarPoolHandler(carpoolRepo)
 	inviteHandler := handlers.NewInviteHandler(inviteRepo)
+	carpoolRideHandler := handlers.NewCarPoolRideHandler(carpoolRideRepo)
 
-	router := setupRouter(userHandler, carpoolHandler, inviteHandler)
+	router := setupRouter(userHandler, carpoolHandler, inviteHandler, carpoolRideHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
