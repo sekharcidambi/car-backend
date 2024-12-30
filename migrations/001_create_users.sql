@@ -21,3 +21,7 @@ CREATE TABLE user_analytics (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+ALTER TABLE users 
+ADD COLUMN clerk_id TEXT NOT NULL,
+ADD CONSTRAINT unique_clerk_id UNIQUE (clerk_id);

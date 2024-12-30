@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	ID          uuid.UUID `json:"id" db:"id"`
+	ClerkID     string    `json:"clerk_id" db:"clerk_id"`
 	Email       string    `json:"email" db:"email"`
 	Name        string    `json:"name" db:"name"`
 	DisplayName string    `json:"display_name" db:"display_name"`

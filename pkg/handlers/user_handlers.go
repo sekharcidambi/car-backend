@@ -6,17 +6,19 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/google/uuid"
 )
 
 type UserHandler struct {
-	userRepo *repository.UserRepository
+	userRepo    *repository.UserRepository
+	clerkClient clerk.Client
 }
 
 func NewUserHandler(userRepo *repository.UserRepository) *UserHandler {
-	return &UserHandler{userRepo: userRepo}
+	return &UserHandler{
+		userRepo:    userRepo,
+	}
 }
 
 // HandleWebhook processes Clerk webhooks for user events
@@ -110,8 +112,15 @@ func (h *UserHandler) CreateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
 	user := &models.User{
-		ID:          uuid.MustParse(claims.Subject),
+		ID:          uuid.New(),
+		ClerkID:     claims.Subject,
 		DisplayName: *profile.DisplayName,
 		City:        *profile.City,
 		State:       *profile.State,
