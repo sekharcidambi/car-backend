@@ -3,11 +3,9 @@ CREATE TABLE users (
     id UUID PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
-    photo_url TEXT,
-    music_pref VARCHAR(255),
-    smoking_pref BOOLEAN DEFAULT false,
-    pet_friendly BOOLEAN DEFAULT false,
-    rating DECIMAL(3,2) DEFAULT 5.00,
+    display_name VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 ); 
