@@ -154,6 +154,7 @@ func setupRouter(userHandler *handlers.UserHandler, carpoolHandler *handlers.Car
 	// Protected routes with Clerk authentication
 	protected := r.PathPrefix("/api").Subrouter()
 	protected.Use(clerkhttp.WithHeaderAuthorization())
+	protected.HandleFunc("/profile", userHandler.CreateProfile).Methods("POST")
 	protected.HandleFunc("/profile", userHandler.GetProfile).Methods("GET")
 	protected.HandleFunc("/profile", userHandler.UpdateProfile).Methods("PUT")
 

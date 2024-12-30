@@ -1,25 +1,33 @@
 package models
 
 import (
-    "time"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
-    ID            string    `json:"id" db:"id"`                     // Clerk User ID
-    Email         string    `json:"email" db:"email"`
-    Name          string    `json:"name" db:"name"`
-    PhotoURL      string    `json:"photo_url" db:"photo_url"`
-    MusicPref     string    `json:"music_pref" db:"music_pref"`
-    SmokingPref   bool      `json:"smoking_pref" db:"smoking_pref"`
-    PetFriendly   bool      `json:"pet_friendly" db:"pet_friendly"`
-    Rating        float64   `json:"rating" db:"rating"`
-    CreatedAt     time.Time `json:"created_at" db:"created_at"`
-    UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
+	ID          uuid.UUID `json:"id" db:"id"`
+	ClerkID     string    `json:"clerk_id" db:"clerk_id"`
+	Email       string    `json:"email" db:"email"`
+	Name        string    `json:"name" db:"name"`
+	DisplayName string    `json:"display_name" db:"display_name"`
+	City        string    `json:"city" db:"city"`
+	State       string    `json:"state" db:"state"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+}
+
+type CreateUserRequest struct {
+	Email       string `json:"email"`
+	Name        string `json:"name"`
+	DisplayName string `json:"display_name"`
+	City        string `json:"city"`
+	State       string `json:"state"`
 }
 
 type UpdateUserProfile struct {
-    Name        *string `json:"name,omitempty"`
-    MusicPref   *string `json:"music_pref,omitempty"`
-    SmokingPref *bool   `json:"smoking_pref,omitempty"`
-    PetFriendly *bool   `json:"pet_friendly,omitempty"`
-} 
+	DisplayName *string `json:"display_name,omitempty"`
+	City        *string `json:"city,omitempty"`
+	State       *string `json:"state,omitempty"`
+}
